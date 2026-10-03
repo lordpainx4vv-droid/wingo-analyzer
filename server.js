@@ -58,7 +58,7 @@ async function fetchAndSaveData(apiURL, collectionName) {
   }
 }
 
-// প্রতি ৪ সেকেন্ড (৪০০০ মিলিসেকেন্ড) পর পর রান করবে
+// প্রতি ৪ সেকেন্ড পর পর রান করবে
 setInterval(() => {
   fetchAndSaveData('https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json', 'history_30s');
   fetchAndSaveData('https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json', 'history_1m');
