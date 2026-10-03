@@ -1,0 +1,15 @@
+{
+  "name": "wingo-analyzer",
+  "version": "1.0.0",
+  "description": "WinGo Analyzer with Firestore",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.1.0",
+    "node-cron": "^3.0.3"
+  }
+}
