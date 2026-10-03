@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WinGo Live History</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 16px;
+      background: #0e0e0e;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+    .history-box {
+      background: #1b1b1b;
+      border-radius: 12px;
+      overflow-x: auto;
+      box-shadow: 0 0 10px rgba(0,255,200,0.1);
+      margin-bottom: 18px;
+    }
+    .history-title {
+      text-align: center;
+      background: #292929;
+      color: #00ffc8;
+      font-size: 17px;
+      font-weight: bold;
+      padding: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 350px;
+    }
+    th {
+      background: #222;
+      color: #FFD700;
+      padding: 10px;
+      font-size: 14px;
+    }
+    td {
+      padding: 10px;
+      font-size: 14px;
+      text-align: center;
+      border-bottom: 1px solid #333;
+    }
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot.red { background: red; }
+    .dot.green { background: lime; }
+    .dot.violet { background: violet; }
+    .num.red { color: #ff4c4c; font-weight: bold; }
+    .num.green { color: #00ff88; font-weight: bold; }
+    .num.violet { color: #bb66ff; font-weight: bold; }
+    .loading { color: #aaa; padding: 15px; }
+  </style>
+</head>
+<body>
+
+  <div class="history-box">
+    <div class="history-title">HISTORY 1 — 30S DATA (Firestore)</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Period</th>
+          <th>Number</th>
+          <th>Big/Small</th>
+          <th>Color</th>
+        </tr>
+      </thead>
+      <tbody id="history30s">
+        <tr><td colspan="4" class="loading">Loading 30S Data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="history-box">
+    <div class="history-title">HISTORY 2 — 1M DATA (Firestore)</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Period</th>
+          <th>Number</th>
+          <th>Big/Small</th>
+          <th>Color</th>
+        </tr>
+      </thead>
+      <tbody id="history1m">
+        <tr><td colspan="4" class="loading">Loading 1M Data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD...", // আপনার ফায়ারবেস প্রজেক্টের এপিআই কি এখানে বসাতে পারেন অথবা নিচের অংশ ঠিক আছে
+      authDomain: "wingo-analyzer-8be92.firebaseapp.com",
+      projectId: "wingo-analyzer-8be92",
+      storageBucket: "wingo-analyzer-8be92.appspot.com",
+      messagingSenderId: "100375073901493429328",
+      appId: "1:100375073901:web:..."
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadFirestoreData(collectionName, tbodyID) {
+      const tbody = document.getElementById(tbodyID);
+      try {
+        const q = query(collection(db, collectionName), orderBy("issueNumber", "desc"), limit(10));
+        const querySnapshot = await getDocs(q);
+        
+        const fragment = document.createDocumentFragment();
+
+        querySnapshot.forEach((doc) => {
+          const item = doc.data();
+          const row = document.createElement("tr");
+
+          const periodCell = document.createElement("td");
+          periodCell.textContent = item.issueNumber;
+
+          const numberCell = document.createElement("td");
+          numberCell.className = "num " + item.color;
+          numberCell.textContent = item.number;
+
+          const sizeCell = document.createElement("td");
+          sizeCell.textContent = item.size;
+
+          const colorCell = document.createElement("td");
+          const dot = document.createElement("span");
+          dot.className = "dot " + item.color;
+          colorCell.appendChild(dot);
+
+          row.appendChild(periodCell);
+          row.appendChild(numberCell);
+          row.appendChild(sizeCell);
+          row.appendChild(colorCell);
+
+          fragment.appendChild(row);
+        });
+
+        if (querySnapshot.empty) {
+          tbody.innerHTML = `<tr><td colspan="4" class="loading">No data found</td></tr>`;
+        } else {
+          tbody.replaceChildren(fragment);
+        }
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="4" class="loading">Error loading data</td></tr>`;
+      }
+    }
+
+    loadFirestoreData("history_30s", "history30s");
+    loadFirestoreData("history_1m", "history1m");
+
+    setInterval(() => {
+      loadFirestoreData("history_30s", "history30s");
+      loadFirestoreData("history_1m", "history1m");
+    }, 5000);
+  </script>
+
+</body>
+</html>
